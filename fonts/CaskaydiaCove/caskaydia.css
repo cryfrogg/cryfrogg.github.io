@@ -1,0 +1,9 @@
+@font-face {
+  font-display: swap;
+  font-family: 'CaskaydiaCove Nerd Font Mono';
+  font-weight: 400;
+  font-style: normal;
+  src: local('CaskaydiaCove Nerd Font Mono'),
+  local('CaskaydiaCoveNerdFontMono'),
+  url('CaskaydiaCoveNerdFontMono-Regular.woff2') format('woff2');
+}

@@ -1,0 +1,9 @@
+@font-face {
+  font-display: swap;
+  font-family: 'Source Han Sans JP VF';
+  font-weight: 200 700;
+  font-style: normal;
+  src: local('Source Han Sans JP VF'),
+  local('SourceHanSansJPVF'),
+  url('SourceHanSansJP-VF.woff2') format('woff2');
+}

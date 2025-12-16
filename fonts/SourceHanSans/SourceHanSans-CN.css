@@ -1,0 +1,9 @@
+@font-face {
+  font-display: swap;
+  font-family: 'Source Han Sans CN VF';
+  font-weight: 200 700;
+  font-style: normal;
+  src: local('Source Han Sans CN VF'),
+  local('SourceHanSansCNVF'),
+  url('SourceHanSansCN-VF.woff2') format('woff2');
+}
