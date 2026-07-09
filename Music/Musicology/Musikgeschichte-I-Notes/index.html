@@ -77,7 +77,7 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="https://cryfrogg.github.io/cs/ctf/pwn/heap-exploitation-basics/"/>
+    <link rel="canonical" href="https://cryfrogg.github.io/music/musicology/musikgeschichte-i-notes/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
@@ -94,7 +94,7 @@
     
     <title>
         
-            Heap Exploitation Basics | cryfrogg
+            Musikgeschichte I Notes | cryfrogg
         
     </title>
 
@@ -596,7 +596,7 @@ mjx-container[display="true"] + br {
 		<div class="article-title relative w-full">
 			
 			<div class="w-full flex items-center pt-6 justify-start">
-				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">Heap Exploitation Basics</h1>
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">Musikgeschichte I Notes</h1>
 			</div>
 			
 		</div>
@@ -615,15 +615,15 @@ mjx-container[display="true"] + br {
 					<div class="article-meta-info">
     <span class="article-date article-meta-item">
         <i class="fa-regular fa-pen-fancy"></i>&nbsp;
-        <span class="desktop">2025-12-15 23:44:41</span>
-        <span class="mobile">2025-12-15 23:44:41</span>
+        <span class="desktop">2026-07-10 05:04:44</span>
+        <span class="mobile">2026-07-10 05:04:44</span>
         <span class="hover-info">Created</span>
     </span>
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2025-12-18 05:26:13</span>
-            <span class="mobile">2025-12-18 05:26:13</span>
+            <span class="desktop">2026-07-10 05:05:44</span>
+            <span class="mobile">2026-07-10 05:05:44</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -637,7 +637,7 @@ mjx-container[display="true"] + br {
                     
                         
                         <li>
-                            <a href="/categories/CS/">CS</a>&nbsp;
+                            <a href="/categories/Music/">Music</a>&nbsp;
                         </li>
                     
                     
@@ -647,17 +647,7 @@ mjx-container[display="true"] + br {
                             <li>></li>
                         
                         <li>
-                            <a href="/categories/CS/CTF/">CTF</a>&nbsp;
-                        </li>
-                    
-                    
-                
-                    
-                        
-                            <li>></li>
-                        
-                        <li>
-                            <a href="/categories/CS/CTF/PWN/">PWN</a>&nbsp;
+                            <a href="/categories/Music/Musicology/">Musicology</a>&nbsp;
                         </li>
                     
                     
@@ -671,15 +661,7 @@ mjx-container[display="true"] + br {
             <ul>
                 
                     <li>
-                        <a href="/tags/binary-exploitation/">binary exploitation</a>&nbsp;
-                    </li>
-                
-                    <li>
-                        | <a href="/tags/intermediate/">intermediate</a>&nbsp;
-                    </li>
-                
-                    <li>
-                        | <a href="/tags/heap/">heap</a>&nbsp;
+                        <a href="/tags/note/">note</a>&nbsp;
                     </li>
                 
             </ul>
@@ -701,132 +683,24 @@ mjx-container[display="true"] + br {
 
 
 		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
-			<p>Heap is a really nice thing :/</p>
-<h2 id="Chunks"><a href="#Chunks" class="headerlink" title="Chunks"></a>Chunks</h2><p>Memories in heap are allocated in chunks:</p>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">low</span><br><span class="line">curr -&gt; |   prev_size*                    | 8 </span><br><span class="line">        |   size        | | | PREV_INUSE  | 8 </span><br><span class="line">        |   fd*                           | 8 -</span><br><span class="line">        |   bw*                           | 8 | data</span><br><span class="line">        /                                 /   |</span><br><span class="line">next -&gt; |   prev_size*                    |   -</span><br><span class="line">        |   size        | | | PREV_INUSE  |</span><br><span class="line">        /                                 / </span><br><span class="line">high</span><br><span class="line">*:  Present if the previous chunk is freed.</span><br><span class="line">    The data of curr uses prev_size of the next chunk!</span><br></pre></td></tr></table></figure></div>
-<p>The <code>size</code> field is 8 bytes, but the last 3 bits are reserved for flags.<br>The most important flag is bit <code>0</code>: <code>PREV_INUSE</code>, which will be discussed later.</p>
-<p>Now we have different types of bins/chunks.</p>
-<table>
-<thead>
-<tr>
-<th>Bin</th>
-<th>Size</th>
-<th>List</th>
-<th>Merge</th>
-<th>Number of Lists</th>
-<th>Order</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>tcache</td>
-<td><code>[0x20;0x410]</code></td>
-<td>doubly-linked</td>
-<td>❌</td>
-<td>each size</td>
-<td>LIFO</td>
-</tr>
-<tr>
-<td>fastbin</td>
-<td><code>[0x20;0x80]</code></td>
-<td>singly-linked</td>
-<td>(✅)</td>
-<td>each size</td>
-<td>LIFO</td>
-</tr>
-<tr>
-<td>smallbin</td>
-<td><code>(0x80;0x400)</code></td>
-<td>doubly-linked</td>
-<td>✅</td>
-<td>each size</td>
-<td>FIFO</td>
-</tr>
-<tr>
-<td>largebin</td>
-<td><code>[0x400;0x20000)</code></td>
-<td>doubly-linked</td>
-<td>✅</td>
-<td>logarithmic</td>
-<td>size-sorted</td>
-</tr>
-<tr>
-<td>unsorted chunks</td>
-<td><code>(0x80;0x20000)</code></td>
-<td>doubly-linked</td>
-<td>✅</td>
-<td>one</td>
-<td>LIFO-ish</td>
-</tr>
-</tbody></table>
-<p>Chunk sizes are always <code>0x10</code> aligned, and the minimum is <code>0x20</code>.<br>We also have a special top chunk that keeps track of the heap memory!</p>
-<p>Tcache:</p>
-<ul>
-<li>most prioritized, max = 7 for each possible size!</li>
-<li>Per-thread management structure on heap!</li>
-<li><em><strong>tcache key</strong></em> stored on <code>bk</code> pointer for double-free detection</li>
-</ul>
-<h2 id="FD-Corruption-fastbin-tcache"><a href="#FD-Corruption-fastbin-tcache" class="headerlink" title="FD Corruption (fastbin / tcache)"></a>FD Corruption (fastbin / tcache)</h2><p>Let’s say we have a chunk <code>A</code> with size <code>0x20</code>,<br>and somewhere in the memory we have the arena (or tcache struct) with a list pointing to <code>B</code>.</p>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   | 8 </span><br><span class="line">size  |   0x21  | 8 (bit 1 for PREV_INUSE)</span><br><span class="line">data  /   ...   /</span><br><span class="line">      /   ...   /</span><br><span class="line"></span><br><span class="line">arena / tcache_struct:</span><br><span class="line">   -&gt;  |   &amp;B   |</span><br></pre></td></tr></table></figure></div>
-<p>Steps:</p>
-<ol>
-<li>free <code>A</code>, now the chunk looks like this:</li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   | 8 </span><br><span class="line">size  |   0x21  | 8</span><br><span class="line">fd    |   &amp;B    | 8</span><br><span class="line">bw    |   (tcache_key)   | 8</span><br><span class="line"></span><br><span class="line">arena / tcache_struct:</span><br><span class="line">   -&gt;  |   &amp;A   |</span><br></pre></td></tr></table></figure></div>
-<ol start="2">
-<li>Now we overflow <code>fd</code> of <code>A</code> to <code>0xdeadbeef</code>:</li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...           | 8 </span><br><span class="line">size  |   0x21          | 8</span><br><span class="line">fd    |   0xDEADBEEF    | 8</span><br><span class="line">bw    |   (tcache_key)  | 8</span><br><span class="line"></span><br><span class="line">arena / tcache_struct:</span><br><span class="line">bin (0x20)   -&gt;  |   &amp;A   |</span><br></pre></td></tr></table></figure></div>
-<ol start="3">
-<li>Alloc a new chunk <code>C</code> with size <code>0x20</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">C -&gt;  |   ...           | 8 </span><br><span class="line">size  |   0x21          | 8</span><br><span class="line">fd    |   0xDEADBEEF    | 8</span><br><span class="line">bw    |   (tcache_key)  | 8</span><br><span class="line"></span><br><span class="line">arena / tcache_struct:</span><br><span class="line">bin (0x20)   -&gt;  |   0xDEADBEEF   |</span><br></pre></td></tr></table></figure></div>
-<ol start="4">
-<li>Now, if we try to alloc a new chunk with size <code>0x20</code>, it will get the address from the bin and alloc a new chunk at address <code>0xDEADBEEF</code></li>
-</ol>
-<h2 id="Size-Corruption"><a href="#Size-Corruption" class="headerlink" title="Size Corruption"></a>Size Corruption</h2><p>Let’s say we have two chunks <code>A</code> and <code>B</code> with size <code>0x20</code>:</p>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   | </span><br><span class="line">size  |   0x21  |</span><br><span class="line">      /   ...   /</span><br><span class="line">B -&gt;  |   ...   |</span><br><span class="line">size  |   0x21  |</span><br><span class="line">      /   ...   /</span><br></pre></td></tr></table></figure></div>
-<ol>
-<li>Overflow <code>size</code> of <code>A</code> to <code>0x41</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   | </span><br><span class="line">size  |   0x41  |</span><br><span class="line">      /   ...   /</span><br><span class="line">B -&gt;  |   ...   |</span><br><span class="line">size  |   0x21  |</span><br><span class="line">      /   ...   /</span><br></pre></td></tr></table></figure></div>
-<ol start="2">
-<li>Free <code>A</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   |  &lt;- freed</span><br><span class="line">size  |   0x41  |</span><br><span class="line">      /   ...   /</span><br><span class="line">B -&gt;  |   ...   |</span><br><span class="line">size  |   0x21  |</span><br><span class="line">      /   ...   |</span><br></pre></td></tr></table></figure></div>
-<ol start="3">
-<li>Alloc chunk <code>C</code> with size <code>0x38</code>, now chunk <code>B</code> is inside <code>C</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">C -&gt;  |   ...   | -</span><br><span class="line">size  |   0x41  | |</span><br><span class="line">      /   ...   / | belongs to C</span><br><span class="line">B -&gt;  |   ...   | |</span><br><span class="line">size  |   0x21  | |</span><br><span class="line">      /   ...   | -</span><br></pre></td></tr></table></figure></div>
-
-
-  <div class="note-large blue">
-    <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
-      <p>Note</p>
-
-    </div>
-    <div class="notel-content markdown-body">
-      <p>Usually we want to alloc size <code>chunk_size - 0x8</code> to allow full control of the victim chunk.</p>
-
+			
+<div class="hbe hbe-container" id="hexo-blog-encrypt" data-wpm="Oh, this is an invalid password. Check and try again, please." data-whm="OOPS, these decrypted content may changed, but you can still have a look.">
+  <script id="hbeData" type="hbeData" data-hmacdigest="a01463ab08dd8f910874157d25045a4457bb8991e4572a271615745d76450c9e">c88add0144a10cd48867b84bb7f2dd8583cdf5e81ad8ae3fbbcb23059b64393d48eb1bcea4825a740d0eb50f84f48fea08680632f014595fcdea98dc5982957a2eabf7c60d070cd22ed1efd33d04eef38c52f5b38740e102a0e8ba9f63bd82c5f00c89c3e4939325335c950eeec9c02b1536b11417ce775b28a90f10ef9aabed6cdf4a0a734109fe52ce725a396ac0cf1305d2c8ca492808bb834732fa106f0a79217d0b674de8f63358c3f707cc7b0194aef3a7c18a449424707982185f62a5337d8915c53788fa006f1a8836aad13c29e9ca0c8de4492d7d44a83a78ec4ec9336a4df5df94ed0351399f938a6d94466d75e54e76710c4795a7823572669bcb1a06705ba39b408d0197fc6a4104cbb5863efeaf18d08714fe8a4db6f41d2fcb18070bb3d947b69348743af0d0dc8fb137e35e892ce21786008014f21ac6dae600dd335bd1430a83dca6a74616783b84d9538c74f5fd5e2541cde328eea43db415a26025153e576e3e50c2a8c780864d855723b2e866faf5b6ddf80f9110a240f978fe9098516bbf8b9a000d3788174cfc912f59cca16730f06a883be1b96a235abe9d7f375844ed2a4c138bf949a14bfbc31bfc66018bb995d2023ae3017accec798955f4261603a550cddc558ba8cda6bfab025c999c6e00226f6d31d1384192b4505295f6b72d2e03150da3f7ceaa3693501549da1a6861d0157a0f07d090968ed47b0d750e74d59984c46304a12783c9f5cad7c5ef2d0a08fb69ca2325eeaa69f0b2d6175db66a59b88044b6e7072d0dda39d1e1ef26d4a09694b7c92f512bcf6d0ceba5adda6f9b444d9fbf173bf10ed0e2f16ed4d9f8aac238831cd1bfe9385ffd4bf206fb7405288ec80989715216b0e473c1667192fcf248ffdd5cd2bf5faaf1cf5884f745d7f69879661d93c853ae03f34ebf26b8adb13cf5e6dabbc8f7926f87fdcee6704d025c3cec025b578129e068da161643055c7f07eb433844e6574d074de963ec8877cba18e4626726a2847a9c93266eefffdd8a4a92b05cb0de0c7c02d32a2479ea1a5e4d46506c83356455c9a85ba3af4a036f0b2dacc4d7b4f54107596593f0bc55ba7d4229b4580d75eb8d7db2d68315fb546de4bbff91ab9c8357ad1e25143c13a023a7462e8e44b5e410a9791e2506f71074a9e064fde036b3f40106ece6d0530acff37debb12b33930faaa9a135994691439500814ac045955a7b674d9a9e181cdc57104875becaf2651c0c29e293cd09cc699517a8ce6720c153b719df192b1a8117c754628302ea13fdb824465da57c7b196f257efb6d5d2684a76eed79a494b4a3f8820fe14f8197ef9f06c6ce91e0a4e9cb8fb30ad53b2af0ed8eb29a4dbb70be61af4b81cda548eada81aa5852352e51ed3fa61f520daea021e35c2277d7bb10e7908bc3645e5b16fba2b2c2f8963b6766cef19d5c9b2ff2e88a1f5b2da57ebd9c838a0713792817793c62abf7a3f2c4e27d3d944c3d28a1530bedc48beecd39985217fd70d4d8c91589939ba9b030a36cb53f95316dddab742423e5179d03d62326aec5d38ad6384069174cd884eb0b770d1c6e79f18235120abf38458951bbdf78f95559ec3e6dd931066bbdacf8f16ff755a5dd9631ba01b9abc29540fb2aab6f2c31269f82af43851a046760d696ca75a85350cde479c315bc6d32ae08c9fcdf400576ee482389ffc63a557e7e69be78ee9809fc40e637d2294ed9087dc37062cefaafae9ec2a3421601b2dbf72b3a2d4e5102cc757cd26a6f52a3c9ce2d5d32c04f4e931440f9aec0d33697f8b50b055ea0f88421051a9fa6628fc5d6e6309c27c0b5ea72aa94913c7a28f23ab8901c00e4c5191c1ffbef7a5d51fd74efd1ae541592aad651b055a2a0f37e7336d56b11b9e7dd4683579e17148bcbbcbc318e9917c4990f0a88be17d3b5955eac2415246321bde2ce0f6f8215fa20d17982913a28e256996976e6e27d5b7b471fb08ee8103bb5f1f25e1abc4f06747c24129b91aced699abfd17b74339756ab6bff749483793ae257da5a5da6d41b31ce1c1945bbeea4a70840ac7fb2d6b030d778472a4be6bb11b331a1dfa42880cdd9f4e8de0ea98fe288a3d7590540f5ea6833a510c80076e80659569ec45c8208b7e54865ae0b0df42f5b95c5c2c0921c40721631ff1f15328c0265a3744310f56574dd13b72573da9a445a512109a98f341c2cc17c31ba575ec2d5b83c15b093ffc397ab354890bc04abb25905df0fe93e238615d80233a6ccf0a9d1cae38aaed6262bdb874500fc38e7e5ed26a6644fbc7cb80722eb439b446b1fdf3d006ed665778cf32cbaba5fc7975c31704853481d7302de2b4a2596e22dd21febd5369a916d89c73386e0326124a312eac8adf8414bbb62eea0a2c057faae2eab51720bb6a85bfbdd270900defc047a421065c449f060a8cee99da199ba789dd1916a15e56322d50483b33dd70c058e48d1b850264647a728000158f1c5ccf7c32b6c83a7641f40b9d922edab41c8669b57ab268b71cccee0239a8a057e86dcd483d6c3ee3c0ed324fc7e7cc89e20e0ed2f734b8bd719a9ba32fe91ad1c41a6de17fe7562ad50ff27b03e16cd6fc63130e4ce423b0e97d9fee39dec2f4b8b639d9053530704d4d125e86ebaa8a1ce48670ec1f8da1d272e13c159853ec73a02bdab3a6e92c43bca937c38e51689bab6668b21e8530849cd4d954a762d5dd73f4985379af2d7b3d4740751439c9686f5f66b23ff4394ca0f74a1a6b022190cbaecb30fb28c79d0264481e2cd4895c98a5fa11b49edeb157c37fc74ea5ac5e711aacd38a9f84623e04e31ca955802fc23edaf9de8f690ead8eeb813025d66822ccef9ae21b43d956f75c8c758f1604744b7540a6f5c9ad33971023c5148880984a83edf17d043ce4e420946ceee75a45f0414dce40494cd81312a8045f0d27e8d6ee225773b82673c010b44ad3ad181755df69aeba84fad8168fff4343935b20406e91a745b7e4486c68338f2603364bd7350844b44937c00e4f864a0af7d21e513fbad2b85fc39eb40adf25d162bc4c2f4167e30cbe1b64c3c37373ca085d52e876b8c976471e5cd4c5fda77086b3973ab815d828945fb7e4af270eee8cac7a2f6123b5e5bfbb2f6aab357b98b78668aea3a71922584ffd7036b06ae83b7f26921885cc7376ec9e7b30f0c39f7931329cfbf4b9a1088ffa08b97c2403619e8c1a62b63a32a5ed2e1f8806a1db64b4de49b7c63446afeaad1a28d1f8fa0790f954c7f5316221c06b2468e5ce07fc5e0ea32e7950007e7aae824bc653ecb4ff8b4d4cd8b367feda55bce3450abacd490482240b1f465aa6117c18e98e12f50cba12aa34a513d61fcb0f5ee1e211abc93c141d12fe11887e5d81f719079d24fb02e92d839453d0a3db09cea2c41fc462e51d04d7bb73a9c778860b1b1edf6a243f2a5d5b94ee7a5747045dfd297ddb26f4a30a138db7d0c6c3fa147efa2c00128743f714e6c4fe3d4114540085ce0fc259e5e9f1fd0062dd1126a63fd183c8bbfa4db3dd0a0f6bf3463c6b5f02f3d0185c199c0645af6ed717beb8e5cfa340800d6cf57321c4d93a51d8bbf15ccf8e860657d82f1a9970df70a6a53d2dfd2b1683d04a796c4419d165379a71944c4fe6bdff2e3789b183532d90cf8371c4482ea620149ae4b7bc0564f96a3fa03d7fba7ecddbf2cfae62644593bf3ece0cdd28a03dab4848ac2d5b79290fcdb44217569d0e5c260bae3a9b91015c939930b7d93284f1b18b7f462d67cad663466b59c5eb319a3a0d494c6acf851bc759c1c3239a4d65077b7f592e911cc446d66ff00e3d1f244585dd2132ce25396aa6db945871e4fa82d63e249796ccad52ddff807da0809a9aae2e0873e5b65032c19af02ab5e1110a940070261b14f0f38be4e1ec56576da48de8fa7c69bbce3b80669992a3c89572932df7d815c84095cf6d87d7adb1431f7db8dc581cf07e5caff1ba293f88b32e4702fef4fb271367ae73a06b76e3ed9dc02b67cef5deebd6dcbce16acc7799233e50547f918b1c1fa6d42192c52370fa5951a6a4bb517124f1adfb1d34ee9f78aba4fbda258f842513d24fc542e603e64e93f227ea38abfd9d45fbbf275682e62dabd223d3d936ed6b8ba503b0be2c9327ae66ff63e0ec1efef25a0576d449293c1c1256e50006bd04d6a87494316e04db0b04119fa6758be01218f00b2876fe245fe363ceeed31960ccd29f980ae853ccf8254a41d6bbb678173ae20389507d302a2ca8d6dba05ecfe98d1f105b16aeb5c565866debe1722f4d291f8a5610656d038f63581f77e136a417da8bb56f04ef284bf02331b43ff177c2bb91cb62bb77f0a83d45d4eb044936908deb7cb9560c9f64f1dec397c0587a8d8d571676d79851e6c3b9f5c4f61b5083a774baa757fa9ff495f701d31d52e6b218d9daa012e8875dbf89f6463ecabe92540c1082419e367c3e8c7a0fd7e4ce4735da3fce0650115ac45918123febe51d5e3d540a9a34ac768ad0b6173c22817c88761dccedc8741c0a12a27819de0c2b50f03fdf47f62ce48b988cd36caf30eb8ae2ee3071b102f473d57cd80491fa8def4ad3fd476fc66ccbe289d3dd8e09e8d4ef9d5ea7b7a559c6c2366989402147748275705bc83ad7067b14822bd04f5e247350be1ee548bd2ee93e06021aaecbecc011dd0c467f0bce78b2452cebfa6927a9035d068fb26e25d3caa4cf2a179b3fcba42f4f8afa50cf66c3de31a7fd24252b766373e9fa0de3532a8a12c7f9004e065c549973e5cbdfd2509b94edf59a6f8fc92c5a736641de03f5f73721d75da866dd586300e94340b3c7e5f9a9c301419806fc0470327507be9cd55ae2de74cfc9f8e644f5257c1408d1e7bd99c9cbaa36ebdbbba1e5d035d290c2e2b8a849b20d76a555c3a976c9fe4dbea37a51c4573221445153be46532cfe79c54edaa4491d7a6407951ce214e381d60a0d999499e0d29835c85779c34e538494f086c14634195f6eefe1a08396d5356737aba00676d03f3c49459e7ea1b52af266daaeb04710e95ca474052f09fa87aba451ee7a8cd4974bba35a83e7d6c3ee142b5a4897dfa02f1f9a143a50fbc1799285f4d2de71b10bd13c28b602c50eb4eb912245ddc6c9dc38a86b06f01bbbf1ac8c3a9a7f9ecc86741ce1d9e17673bdcbab51ef42c8549375f7c237a44aa1bff91654849eb2e4fc335062dcab2e13fbe42bc024fc5dfd925eca45b82f4662dc6dc9435a8f359adfa082f7087541a0cbcff85c7c319cb0934efd4a8ee2125dd474d5371b715652afcda534f2860660138f5d6d16e5ce86eeddeac5066314be2ce9e581e7b0267641a2144c8bd2f6842b181ae22df1847013b60f9f1d886d46c91b7e31da176e8dab7717fe735ff7e48691393356574f895e6e1bfd3f326d99d017e08cd96924f359f456a80a554bfaa02e3d514ba5afa3927399e41215bf482835e3f5c1d613797732a9144178dba6a078069080e1009a9be961c218a67a9acfee66e7fde499c023b7836cc26c2f488f5e7348a349e49367bcbafe98c998f6be944729d110435717dcf15ea9dba48a6dfbef91dbf290c24cdc10e90e0908d985bd6ae46888f1116c7bca4821fdcb06cbbf9a795e2cbee846b72a36e0a6be9a9e4761270b02de835e576a3764019e1c515a0e0bd2a0a728093098ff675ef8bc130447136b154a4bf50b3f2759557432a7b212d5f71c58a2ebb973f8a3522e859df8b2f74b59ae24cf0e0ba164f19518428426a1f8181e24def5cffc178b8e011d9d5fb3f8f06a1f508443ec6e746bf837a16864c494d2169ac748765f18400b6f6ffbd89e35fe77a793fde608fd52d9e760c96ae0f5801e05edf1a812add146cc55c8e3b19bb15fb92fe16aaaeef866e54f6a628abe04b5a6b51d36f19290d9b4f4eaf9785b06928225a4498864094f36965496275df7497536d3617f1857ac3583b4c08896513746edc0c57b2a724f7e1d8a129685a89c93b7e38b82f7f65f9a873edc15e231856cb74f1c55eed9c7142346c570166a81f3e7950afabf56de1180c74d5daf7ab0d783453f7353d4ea0c8772ad98fd4572eb11f5528369ae9eb48aca8743310ad3d4e729a1845744cc720211099891d972639cbcc36e38bbff20830b23453fa16b0e6995bc9c6246e84478665db566f5c35d9d994dd5fd981b70a3d248d658cfbf53654b288b6ab44708e99b145280ec8b822599c77974219491bd02187168f35d814184abb4313b0c39d17edd2a116d1501a83dc5f5ad1b639b6d368a22e88a5fc5d77a2f86e2cd97213aa2535ee0140671b4b4ed9718ce4d0a0b50a1a3010e703b58145b1b414fee658956db67309491c52ffb6b6e011a92570ef0821b29fd2e20b1b0a7f6dc76d8992321d8cb00194f3ef3755c670d44af9ab420129cbfa9c7e8a6a2650199b6cb15fa051527578a5cbe8336a639ec8d830529563c4b5187c5c5989c929fc06ea4d84c28fbb98b4c8c85e6e2b538d5bda010c6b6684e4533f93c762fe35c8cef83ce61d0477b198c07982e98fa8ae87d0c7ca430dc9a0d7c8b2b1c1a4f06cc63a3120ad11c0a2ff73441eaaf0197753fdccf4c47a80116d424f873fcb3203c0f638e0f7d24eb5e242cf3268836232d3dde1fb89d0127c17244c28afe672d4b5240bfc4a60f14bd3926dec5846b8e82d508eca99ff0a5854094d120bd6f5abb2a682e4be620750a90ec35c1a488523ee5652e69bd27ed7e30de1f65e6fae82ea35f5cd805e87dbefe86daac4f38c4a79cfa8bf76f9cfdc085e7f16b95051a73d87be6420d58b6187021cffd67f80d39d9ba637f907ace7b36f20650f77af8d8b62c3f6dc40989b33435a584f933b3847df44644aeed0c92795061d7a8472ef36bb94c13f19c3a8e9eb02639564dc8c2b2d3918daf539c3ae0cf4b1dc6c66afbfed3b0d955ae458cd6342aabe112c82c26f860b60793e80dbcd448df6d21a58bc530a5f9f8cb5e690829aa50b69226254c0a21869f3257853752ef93380068c5e41954fed452687adadc3e508cd4b4cf86ad76a47d0bfaf2f0ce5092a13321f2c7888d4ebf38af2540be5dad00e5036d3416c37d14a6291330162b30d5d75b7b992fa6ac2ed2d54c57dfdb6c718f07fd14391977aa4b69b0a256907e45536e23e55fbf05f79471d119e3844263a657395dc4321db0f98033116e2f9cc5d67cd78919735ab8315dc6108e762a4e70d7706151eb36dc2ed3154300e23fcefed3fa1ec41b2d4ef5d5a3e246f12f31fb9308ce25f50584059a4bc3415097b44dabc78968a3502761dcc6a6aa84578b99495bbd77085c9ef36aaa607aa8919686563439e2c053f8e39c8db4eb365c3d6d8f7eb0bf7cc2dc516260bd617145d49fcfcae7c91984c3ca7d5e92d8020ac0e45e0215d8a52aa6d3e89e9256ada068287e121cb3f0692ef0bca977298c15f4f0754c2073805c776b93741b94b39082bf75b4d4098e743078d5b928bdbee34f07dc552b6a70420bf940d53b3f8fff10de9ab9839dbd71f1155723d3674e7ea393cc0d57699c08c1ff001da45cf2d89ee0bad8e3bd795df173b0d7deb88d69a6b3ebb2cd355d74edcf22cba9dd83b661b9115e1ab791b1b21c13ad1daad64bc786c20ed3fe7d9de77500b06a25287e444de00e0d8673ea1f712252671c8fe6f2727ce6bcecfbbae16bd99403dd2b351b86eb63c5cb78f3c737a190ab9e9c7db10fe5b20f1cfa833861d9fccec5d0670f5f0fd9fd7d4bbc8550c8cfc0ab3915138f81f98d3f3affb59f900bf7fb1916f2b1b3bc9704ac95ca432782988a3abec05dc88769c4009cf0124aaa4500359248a7337e5ffc3279f89ccf104b4beb3dad0d9e805d5cf0fd333e4c4deb71aca4a036dadaa72e0b5ec9572dbeecd916515ff134183c8e4e572ba780ab95faa2ee53e66abbfc694ec757021e661f076f67a6c27218c7a3d961982b6bde3bc447912fcfb21544d83915a5a24ec010c2bca263918f6862e3314033b04b67a4aec8791597f05b6784f615d01e35d70e339ba6037da200141e25a245f0cdbc91952750b32315e0d5a53515ed06dadaf93c3423a5ad5709f27c6a9dd71f61571e064dd69e156a2b9a0147c5a4e9e94d8b83c9338ff7a4f8e79ab49ab1506da92a3b940e5ce1f7aa011fff3b419e03b7eb35ac9b07c65b5af17c39e33ecfdb2361785d3c8e49320d5fbdd5a8c4f8b1b0744cb6803ace29d9c09b94cd1e3e157d0e88d55fb1ca6ad60bc5896dad12a70d853dc45563925eec56436ded3fcc750bc1314598f5f1a307e95bd7870f1be056e1a2ea97524293f5d2103d5880e6f3e6fb9b81e2d56317b6283cce32d5789c58d693c87898f434c080250750861c54e9fdf8f16d3edb007cb02e4939d89ca7084b813ca0339e52ed4a84492fe0769d482fc91ea22aa8d1782f73e3fd107d2ec524e86dfd0c28517b092851cabcf3351d900df8ee0a8857475e4909a229fc95d3b52fa1657f40b1efebd87b20f07811f138d14067f5b178eee626e2bd65860daff40aa414b0acf42a8d3bb6c8028e2c93ffe562eb8b8263b140b822bcfd7890ba8e2077fbc2fa8c77bb235bc19f1a20e30860de7f923152f1f746c2968e4f4a5e9bebdd4193653c4e21c50e79588a755d8f57967f104f0acb5ca1e635f30e6b9ceb41bd60791b7f052e754803ee5e104fab4c7adaebbfaafab6ce2dcabd07e9de8de52c9203607388d17dc028192d5ba9209dbda506146734ee0eef6a0d71a69943266861ea62d25cb488dcb17dfa2df6e1dd026e2e4be1f7d71a74da2eab74da52618f1ff94eded76a8b97e959723e2de9fc703fc6ef441cc01f649c8ca7a7d25db85178e579a95b41260206d5fef290e8b2a99f645eac110a9064509a9da77f9b6dd50f99d5546523a466ecd393d0649b1c76ced66dd7e2389031d56151edd28e6f8aa47c7921c773b15aa167f0d0ada158b168033cfe67a3082ee40e1c36c72a5d88b5356ae73e879d3b3da6c06d71f75b125cfe67a1015c8cde5173fe40a1775bfdd382726bbb4d460bd500f24f30edfb967c48b0afb7632245c7aad1b3e2ad226c2394b0c16af8fc614f90521f4410ed5c79a8268efbc10e099389a2cd5483b7cd718cda58c8a6c7705b0a125a64d102002352b18c38e15f181286c33c7dbfdcd27a35c32c96b00368e1d450c054998e487f0d83da7e9daba73f3ec89d2f3b0f883db9a061f1cde9ba3d1fe7608ab47ec5a37300e60bb4ea5a0030c3f3125e937bbfd854f79761879aa827e84f30aa3343d1f6cf307878a471eb56d391486aa324987749cf44b57b028ced81d58b13f0b84349f8ff2f4e3199448fac02beab05be04cb393a1c37421cea3ad25e367ebd97460073f2e2ee386f19739a57f5bcae1f7b6a913a2536640f999f6ecd4d07bab9dd872a96e44b8786fbd50073b499cc216046347b49ea4cea786e44f6f1c02e12745cdc318cbb9108bcec60db55966ec6b6f258c3b113bcebf03a585631f1ce1bd191180e7c72ac5a22b647baa5e31e2a2eee5c52fee4dba012e27c645c3a3539b9eae53421f10b5c61448a35dc5703198abc3de5cfa22607aa2105b3c33a7bdc5f82e0d2ca2d9bac69285187d846ca103a79fb789bebf60af906965ab45bebf0a3008462fb60be46e2d9dd1226b53f359d874b7987d959bbd4bb206eb39f3a03d58ab37407cac92c4250f0e8992a31710465b7885be8ec3989bc6ab2ec1972d95d767703c516763ea7a6025b9204da4ad26a9a452649636b4565f7f58a724f993a30fcb8020331aab98680609b8564ad0bfb13438280df2d11d6e743ea68a6c0c8dfe1fdc2149cbe3deca4e7d8acb1ec431a28a79b28a8839ce223e37225e50e4ea0001c7cfc86c54b99555cd36534d56c601b9004e904251f4a1bdbebb11a51c4bf333104cd395ba127fb04e72497ec8d2ab374e1ed85f028516483abb8b6d65851809a0934ac84b0ea195c4ac7b5fd04bddbe666229065fb1fb625b3fe92f918e5be7953d5d4a41fb0267270e4349b1fb610c0f0cabede025726cebbbb7491b5b57794e07d6fe07fa8f95ba3d0658250bb7823bbccb49146ab16905105a8f58d84097b913ced5c1b906098692d94a2bd21d73fe964ac9ebfb3c83fe0bbdd64d4130b11f244c115ae9ee1e9130d1aedf10da5bc726f93c79f67aad1760194d4397a378704663061989edda08777568fa412d59937f5a371a83d34f3c1e81f3f0de42e348445b255d142f73489024af3fbb2635ffa6fab7d3d2444a59cba16b576fd93407b2a8dc545d93b11266c8e76d8749049ce607ba2856f5779efbd994d5964972cdd89f0d6bb3256ded98739452a511e252702391a00cd59a271225a6f97bb106a9fa394243364213dc3a71c8b000cd741950122e8374c1508f6bb819ac2814dbe2bf748c4e857e04471cd887f845a6531de5d663350d9ec5c4b14c79a5e6eb880bf443a70203d357a898ccb98640000b6170bdb207c39dfee4b34a1652873f9391d7dfe2b5cb2465a5faceedc1d965b6af19733dcaa4df8843cd6c4b355a0cb4a8a12953028567796af236f541c7c660b7673ce00499b015e47852e013bd4c0ca0c0caad78cabdb2444efc67479bd8c87b148fa4285052041e46da8351127c35c806b719811ca9fec17736505406adeb0718a1344cbac26f8f012078af18a7cbb373a0875d00e135952614cff7f240f78223e2d08344d18ba11929088aae118bbe415f3ebb329aee8c81a9c0e7b1c5e0e52828165bfd1e366c04513e22f05299c7d3c44a5d39c8cc9f20a3b4c463a33b140380ae96f7eccf7daeb929e8a07471a202d93fc325e4907273f10f2648ba16f472403164e5a549a7321d7aa9c8f91d5cb14e3824b32089c17c57e788f959fbcf52a1d6ca1381b9bbca556fcb5194b126fcb378a2cb5502dd2fd6c86fdf7a946b518b2f137b019a85c93f39293619ff6ea069024efde7f1d77030a0378307975f3313d008dd3f79548ce624d7d215f6c3269c8151a6e6f14614eff922ebde3cf7a94888cc9b2113049f0f7097887b41bfb09fbf35cc8eddce3e95ef2934a03f4c32284506428e3fdf130ca2e00f76a0506da410d95cbac5c62f383d8a5f8ae78ac27c1f30de361587fe76085b48aa789c91053874436f19709ef3dc1d1c2672b6047384d4b553acf84ab0588d468872f2009968a5cd0302a673dd0955e0351a46b7a780a8dfcc4cca8a34a29e1c0b077711806f05cddc80b0e4b920d790d55785cd8d861bb56bdb5823393e6adc1e7e96f52cfadfa87789e5a08d4dd71232c07daa6216ef908bbb3d30d41657650cf192321c6f452cdfceabe8443df80dde45e46b3dd3319bd95b852db05ee9235557ba75f145ea311dd3c5eded6d1c675fd367cc77495c5c013849c94b86d0f7b0b987ccf3523ecedb787588a2389d90a793900222f93bfe07a6c6f0cacabf2fdc474e56498c4ca6a78a3c7aa6e80cb7b74d8fe98ec288a8b8f1d269ec690c461e63b7bf7a59cdd9bb488671be2808f292304bf57504577b8b47632b6dc5813f0d54788d6a19ff57c64c1bea24f2e24b645538689b316098cef35c59eaff471c126791e5fec3912e47e36db1ef0966113749136366dc7dff0bddc2ee3e944f36fb6b8f333b1c262b294e05573c10d2015930c149e8ff6a2ac25333988ade448e14b9c0ccc7aa9929f14e117cedfb5b57ca8f04401520e7700782e08be69fd1662cd09dbb4e71fa0b270f83ad713edb536847c6e9fc75fd46cc6c25ef6db8f1779953b4dfcd135dc8298933ccf02a0787f8304c01cd54368141a7461b18fe4a32f9727c84043a33374701cff69455f2cc730ebbcdae2e9f62fdc8991a305f8933582c8c9fbbfc74b3c8f1231d33247a02653e363a1f28ef515ce3adcde07013f81fb544d5df0a7942a10c9c67311d238a447dcf3b70da946e91cf117dcda409ad6a72e7e24eaa11244fc368e464c6a6ccdc4170b33c6c76978427c4f620ce4da4baa556a5eb7f0a8b8b208338b59e77c1fc897ea6b509fea92debe6f120385e93d8b453e1983c41daac82f36beb2fe0aad38cdf9443d2f26a9ab57c8d59e25db490904fa77fe2dac917963cf93f36ea1b01df954d0cabf8ae7e70b0bf094ab16802da4fd88b13967f4f31c35782cffb3e005328a3e400b3c50aff0952899aec07490ef7017c874ed6fb765df5c9aa0ee506516ef8cd549c34d71a26c8f538f72ca090f449c51473061a152560917a0e2f60c65f8181c8b35afa83e02bf61939f41e7b2dba8bf9c0e557ade8ad511611ffc1ae02507b7542aa81fdf9cd63aedc20b2084bb6683bafff48ce55ed815c59e479c3dfaa0d0d44aaa0ccea0c89acb05c386ade4741577d42f93be13844b7c5a3869c84b97d2168293cea67c06a51283feede1ac9c4d31e8ef6741ebe667db73386aa0469f9bf048936e9e44d4c818b7f2b08729ae9a84db5b729040dfbbd33f7f668324539d766c94caea5342602152d4e6646aaed6d10da3dadd6d3bda1ee112eb9e80025d892a748ff462ae46444d6e244697e7fbc2e63b2d21965e33977e9927caf0076b47c721c78e571234690088e4a6f4c0950e9fde79614a5debdf08d8d4ecd36f9cd0bceeab0f044ead9fbf1632b80c0621d592df00cdf3338fd506c9d876c172bc3edd28e8e777894ea21d49d573cb55f38744c0e529b6184389274489d8ad7f573fdfa45627d72813baab546952144f9348648dfee187dc3bb9e9301f9c97c60d87bd71070a0903baea30b8f3719e18d3f72f09c272b0d6eb8045b00b5f4efb5c1d62d046c55a2c6989b7a0dfc9c03ece07f3f2938bc0ebc2f94d234b8ef63c5dd710b7dfb02388d7134673ef6ef376286e4769a1f22bcce8bde79d891adc4c9809ba4d533be9f06fad9f6affe457849be08cd63922eb7b2b46261a9cea469ac632f33b868c0801246347c78071c54588e9e31eced309f5498864dc80ce00397b62f5d56932c1030c5037354b8c1e887ef55cd93efbfee51483f882f024e179b747642d85b8dd3e40b08df368d362f78a3d90ed19a4d85431edc9920bcb17c8b07c6008fa579ad45be0d9fac48a651e119763cc120682aeb7fe1ca40311fb7b95fa87a7b2227ddaebe007308ef80035543503d48edf860693e355966a94e360869a05d27041d8c15185761cb563d40e42a4395bb4d1ff021eb50c395aeff596953e70bcf5a2f00ca8025b10800b5a23b0252bc317f74cb84bd34e273a29c6babec6d5453969d2b1fd99422e11e4e7010ca54d1b9f46f2f3115176ddf384224f65d6d22c7b966edf5502d38d7eae43f4553b44fa64eb27a274b20bdc77a956d13d1c3207f5809ce89cd4bf6f8b5eb0316fa0203b740dd863c87119f0e0d827672c911a08cc7fb66800e0eb046b504877f1826bcf877369ca9886e47eba6b01702a1f18642d1edb7bd3b0663d5d24f8984a81bebb6e5315771362d68d3bfbed0453469d48d5558e10d64bf7ab8230badf63f40a6bb07c29158451092b6582e8c2f375fdf72f62c5801a39ad102734b357d235f9e3c428c783c013c65e4c6b31fd28d36df1a66d6088d2aa6c958cdca49a323f3d89afef58d4423a3c0a8a672e7592d8e424d4107f2fe8de317036461de69c569ed0668ecc7169022e0235722db9ac8ba6aa8ec758867ac953dbb39b33a089f95de555618fb80f3c5f3b0394c02936dd5c4e5ba3531ad936124919891136a9057f939eeb4b5c2ae5e3878be31c6da905d948b4b7be95a8414b11e99f508b937215e97f7a1537326d44a119da9660906cc9372ae0a2218700518b4fd5b2c1a2e51e740fd7148787ef855fb720c54c45760c9ad363e7fda28f79bace4844ace7351d8794f077c8a8080642f781e4928a3bdd4c5ffeca5dc61f39e773e3f367f114d1287b39dd5a1d5a6d25310304f5577a0c288ab6f5af677035d92a12e7abbc48506abe2d971e3e92cfbce7235bf91b914637bab8e793c289d964020dbfc68286256f882df4b563c9486e1748478ccf7d479348e8ef9ba0f0f0360df60be132b970ab6b6b3a2a96096809a31cc0d5979423243f3c9ff36f3213a7a87f2610d884e043c1559bb099c7f7a6d43bb13dc0f5c17109ab91da65b57253177eac1be4108dbe428ccb2b326b4702542e30eb6f9a44e3143c8a79d85623d2a305166437a884f1f62fa33da9ac0cca113cea3ec235633bdc981eb75b4835e073e7201065114f0030ab240e6fafed2e04e28a059710247d7ff454120dce21e59fa6202cf35baab23be4e96d8fe70d4d8c2ff0dd3ff68f0967f2403e07feb734fadb490d9a9a767847452b38e96da32d58bb910f215c519531bcf9d2bb6ac5fec7ae38b13c420f8675f75cea5af591ddd436123bdcb0f4b085f98d10c6dc061880a5f94a069d13629370e0e035833f6cddc8e10b9d52f84e9a9d6f8e0ffdfa4c743063a8c1d2bbbb059b1289680f3b56cdaa3cafed94fa46aaac37742355773fd01f3f5b5a7f2a79317447bc9d664d836a3239fba0bb25ec959d5a68a79cb34ca61f317f26e7b387a5d7b226c7586387000c24fe2c96fa69ca814b0c33db41e0b98c9ea15c839745d47e2299b0ad2cf9c83ef5af7afae788ba5f2130621774a2179bf443ce4419ef032333435fac934b099077f8002f5e561afb5aacd262c6ddb55eab3e7e18fc49931cd9a12b575c13a79e176784f2361bdd47473843c1f8909c915d73b9967bfeea8b8efc596381051544c47788ffe197645cc40b3384e33db24d513b9696eefed1577112ddbbf9c3a773365905d38bf5fc103f428a51898b440d9b656f6055d27ea0c2abe3f66aa572baa006e6065d97194fdd2c511c09ca7c9db9a78993d92cf614828e576a0a5a4639ad1f8388cfbeb1d9fc0c5bee4bc05613567dab6659e87fe1687a19e7a3f229788a75570a0c6fd692ba7b424bf1fa745e40097a7dcc511ae9978d77b7ed1ffbf5e9d4344b2761a4276b52aea417428ba3ae94d76fadfc03f434a9348a0cf3e35f4514fd741564ebc324043412b2fc72c46e869ce027cb38e5469d8ff95eb366bc9e1d6a276743bf166e73e540820d895802cdcf0fdd47149c4edc6d7873839f6139a251199a83e8aa6966ebd170bdeaada5c4c60f2a9ab1336d396d93cc4faaf88dbac710baa9872ebf728bb66fa5977428ae97efec66a4153d9b70eecfda395be094a86e834b418874bc1db26a85abb016cc6ee4561e342b6d0fdb7e67c601283464646add61e3e2fb08097217a80c47b45009edb18bcdce6ffa6d180a5acab57ef6a2c30aefc326a0415156736bc145b6155c226f6f8f12962d26d738362bfc05392b734106a2f6956501b36755e14b83dbbab351b0f05751bb90a4949ab908f73407f83fbca46e3a65920cbab3a962141c140eb7667cfce09fd33396672f648335c1ff733e968323964ea792bf6e20ed5c3fe53493347a366ebb0d2d4825ab13e73959aa1093f1290fb968d60c3de3ddd559b0975d17b1c6cadc4614ff11ba3a2210a53597ea962bd01d341e6fa8c235bdcb0736aa57f08339c46d1d7abf2d2fe1a1aeb9e9ababecd959be44cce15be2b7cfb2b5d05473d7c4b7e721c79f2111a6421e7d9cac610aa4dcc09413eda90f6eb3befc951f0f6fa4df6098d62cdbfea7e3fac214cb0faa3791eaf17f23bc60066fe7bc3a7b3b9e3a3fac6c9bb3d7403ac0ab5297ab803c22fbe0d4f42524be274defdbb373d19328006d4a2ce59592e873e96b2f4bfa3bf6f3f1b1c4cfe94cd7e30301d932f9005fe2f08b1e8dadec4836b438cb3c2e3f9fa2ec10114404b413e1b8dca74f3d77333618a6036fae4c8f4e191d5d251ade0de036f819eed3c5285bf87920fb6c1b4cc406691e8c7f35c3c7e9fa294c7a44ea557aaeeb96a2a50860391b94d8be953c2d691dd078756eb1390f0c5df088c693e1724227641c02c3bf08966c12bf9ea384d4fe46f9c293d0e9fa32a5ea0d1e54de234608adc9b74b1f666c89078707ad8cfba7787e3ec9112f0bee4a4f75cb53b1579273a16b7e14d232c87e44e149932ca23e7cd866ccf24f5830c50c4bebb3698b5bfeea76ca4f4cdec0f1421f40dcc3fd90cabfc32c7d6aeebe0a32b467f3a59f7df8b4f2eb096028ef643994d67292bf550a543ca3a8a748bd2fa38b64817f4dec2e4ce716f3d0f7b03efa1fa308c3c8f8349fe9b68149c3ed228a58152ecf623c2cdd1fe07f0fd36d6050d1789a5ebd69c5f326a1214f6652172826d1bc1f3bee6ea4a1fe13b22f4a46a7574d821d45741ba95e367cfd36e65e54c82e074228dc9f185e7f0f353cb408a7d04b942edee3c29f15ae3a08cb428e6396a8b8dece48a5907209661b461a069df7f3b65e1792c7fafc6b8551e93e3bc6fc1e5f2dcab36900143455c8cfbe5bc9970537d6e0520ecc10482201b9c70575b72a41c0d8c3697f10ce02ccd3ca8e4e11a418a3e81d5abc32899566e7702054dd33f136aa38d4627947880eb2ae68de2486cb8be44a1bccca8b402bbca5cec56fe4c09e4b4bfd0828ea358c93cdd78e8c40b26b6b10c5b8635695307eeba00276af24a19c5c6968f5b6614e6638442590a4c269add9713adb9890572ae272c6a24af3c6edb24b2fa27a94ca0ca1eaaf8dffa93c158178052ab475b9ff5b5f11aa3f6de76cc04052913647b5f631d26036e775843d9867ec7b567b9363b0413611493ff28e2e5f039f57f7647c1a089390b9cf8fcc744a26c0c0307a1fb798a670748c6363a55398c94e0dc2201ed8f9584a2a7373b25fa26afa3391988bbe630de1d2c67c7ea69e8f0885927318b897db4ce522675fc57fae46d1cd4ce45fe1945ee73208f074de04f0e9f48ac3e8aeddb353e2e45dcb20d64220678453044d1fcd7a734b0f899551c9ffeeec56447c825a6bb6534dae80432c88c2981d60403a41e73d0654075f920ada69fc11311d7cc67b21691d2ec206c00c555078118380f78250cbe93ba939692d78a9a56436230fd7bb93013675c8b225a309d0536e4e66ad149621a68176821429dbfd8380758554fe3994c084783104e839808b64db8b38d280ea9a78cbfbfb0f00e8523770f89e85951ee5a5970e16a32381a587789e1a5ccca2127cdfc109489bce7a43cbf723574dc2e6755093134f1ca6e333aede5102c684ba0cadaf2c544ad5defaf8bf1c59f3d8f6bcca035ff77932e2172f14ef4c136ccb326551dcafb223bd20042cfdb8b4fc5ee613efe82e07241faee73a33a65dd0b493eebc25323362c37f01ae789c7ce8058ec3ea86f5537b113ed4cd7ce1c9e34d47562ab7d573773a0fe3b965978361ceb7b0aca0e218860b4aaa7140024310ccea512a7b3f501dd8675272b48b5b990d0e78392d73d196b71cc580fd4bd8e2465d56274b9ef2ef8219309820f8cfa914623d88a73de1cb2928953b2257994103421d855349523b34fbf15eacd362861f4c6ecfa05ff92af013a12e1356efe3cee9ba9ea0adb9ec9485e4f0c504b7439425623934545f0a8850b0d0877943727654934514a9b8b0dfac395e157a06e67e7244fa7da62e84e50f6077d3f84fb63ef9e101b99bce86d8642fd38e2e985f2d6cbc32b96002c85586c5f2f0de1657b55dbfdcf20f7bdc60c5680ac8d7c2a78e1944235ccb8281aefb08d3596b30796fd613421dbea5d45a3eba17d135e1d1dbf66873df4bb6a1fec7dc24fc1c750dc6a8eafb74de22d029bc309df6e435be150acc00b4dc72565ed49b4da361aa61768bec66deea2fbd460ae00e731375eeef07472c3793d3078e0eecdee396decd91c695f59758a31d814b63856e1f81ad105d2b35520aedfc788d531c67d95472f7bd9751e604f88720e5335e31851f004f63fa17e6ca6d2e9f168328abdd24b0fe466a06df02aed1a8d7e86047e9cec1d660fe5f505c13390f2ee7d0c8b2787e972fc3d2613cf50936e7bf6babbf417a6f021c14b54d2bfd61672542779c9ed8949f344f789fc5fc7e65aed3ff538ab5dd7c7a6f4efcce570071f5bc60f764e6f013ec78b60b6592e99f040ee780995b0d5f0c4c80c21fb43ec6140fea73e781c60e3260145fc5624279c7a7a74b11dde04e2f12dd2ecca675c7b70b5609992a0eb4a3b90bccfa5a32a5253bc4ff80f2ae92f337c3f1ccbb1b2f7ae2d3a122cd625bfdeee92a0e5ba8b0de2ea98362663c2eb790b5e8cb8b4748c0ead1cd508fbe785dcf46fcd2de876bce484d90ca1b95304fe2a226d3c0eada87fde83d640e63f24717adc011366b532d3426d3b3e0256873b1b22add84f12925a34904e661d36542c472432649890df7f4bde13cb04efc75650384e61481dd962dabad0cca383d49b7e3729d1857024593713c472371f8d091546830e698092186b492337ed8df509f31efe3fa43e93debe085c9b6c91d6fd95e0e50891be6b1c0ab2fe53eedc6da9db3d58685ce5fa42b6cffac6002ba9c8dd126108bd8ed556a2a6425ccc725d43bff69937d2a0cfbe4f2af957f497e33afa5ce3d9f65c518661ab96624296739b750d6adc541f49eb2303fd99b7666e2106088ad4913fb9fcb05f84e2f7346b8c5cb8c225f134a86c788edc66b419b9028bfc76e15e7f8d4229395be47fe3946b91f42d4e2458f1075dfd5d2e6121f527a2fd42b088167983a71fe092554752bf802cf75a0b7839d3f07f1a601bad03662126cc6427b57f8ea2c60e1fbfec0e6b1542c784e8d6f9dffc1fb7cd2f4f37e530c2f4759704bd3f0cd8d86f54da88bc58c7aac43fa266e72c5341ff87cbaa59cfb9308df3b0c3a60e8272738c4cbd655c81b143369e931a22adbccfc6ea8061727dd2b2afa88135f29aac83a56a71a1fb5ad591e53802d41db7ce33b0b7c7472b8837208d4ea1b7ea579981d288fc4f68fdd7d16c80927469af89400709d3f042da4f9993c248f940eb9bde4c51c8fa675085d6c0f014edefd914f3756536dd04b7ba54ac7b1c397482c936aa2bfa56df1362420c0cc59b403fd1e89963d62382be29222e72519af1601e89567071d815cd8829c92dbb05a723b20056ab0d286bfe59bd1392ed3116ad65a7616a43a711401c58b55adfb713a8eb481e8cd3fb7b45b89915b6eb5eebd57efcc855042063798934671bde1d7d66104e91fe18decd23f8a9ea3f7af2c22adef0d2d5231a354c4ca6c93937d7148850f83a7c102f242ab6aaff69d34a784009c02b317528f1fcfbd5432a2082c4365e62345f8e90c5ad4f4e947609782bf679a7d781fe74e8b54805b717e732d53f9a9460589a626f38d5605ed2898b40b621fe431ffb0e4920418cb86f00a17188bcc7383379a57e9923d92ed1a1568f8dde8d1392de8ee70b78916bf495f7e733b545f538c686556d96519345a864587aacaf6eb3c33317e1e2a2af3fa626b1825735225a1ad313b47dabf00c1af2f35a1ca658279bfd8b9a8306e32e13481cc84b2e90080b670b76f47423813cb09616743db28c7fa7ab5d9bfd144abdb319d5ce1bc283182130985dc63dc533689e8feb5463180c97437c6d7e9794ddad4d4100370bad1986e06a163bd0b46b69447b2a10897a2bde78ba4783d3e65325bac859258cd788881b68098b9788905313825c4431477ae18623bcb85e515fbc06eaf89856ea523f833fca88b78c9245d8f9da5b5c2bc6f18f589c8f1599c7528873a7528150fb252e263e4f9c698787d82530a016a05d1062f84a3b20f695e4c5f3bb4d87aa8047b1d425362bc01fe4d18d766591550f53f86481c38b7219d4fe04b00a4b701e6426a8e5ef0e2fe5524ffe1c1aff9cb3053559350ce04dfd8565b4926f34e949748193e12ee9bee0bb5d954cc8396912cb94963e9d5479aaa3b7198d61fa4ded122b58cf609db4f58d00b064806d825e3fc3de3036c9064fb79e580a132de5cbc1349c66abe2304e1ed3acc30b8b0d1c9a3360b4e3f4e75b9c7ea8c9fe4309da97e3ca89dae066d231a649278aa49ee524c58338dd7bcb7f239cfff3f667bc349ae3f65fa515185995cf28736b2b73cd053214e71f253f80ac6c2392fecd8d34f7d0af242179af7e696da2dc7369100477cee38f69c55dd4e9aad5d90b882eedc07725c19e1bc4a57eae9689773afc6a44f22aa6d0e3c336aa47d9ae0dfe7a570f26933290da97ce366ca037176e5991ae1bdc5710a1206d8ce1e8fc9dbf55ac067db23e43aa773c6f8006ff86eac018c04cdf969c249100f88a9582d462ea9474458d7ee2f523fa6aed8297742dbbaaa0913446910a744f76c6dccb79869fc86722b98364e3ebd0afd4a0c24eede7e597a8116ce8c576b9f93b2c0cc3ad2533688185841f51021b7b355ee121907610954a36ede8a960d7aed1010f6ad74a58c79c1717217c4a72177bd0e1f1b3269cfff2e07314c9a96e9ee1d000d7c73e6152e0f0565ffae97e5e2f16fa0abd93a9709f499c62bb1bc48036747874af7de6a89bc0030de23b4e4e2b2125ac449be0177fa3bf03ec73e63af0ae0c3bf2793f98850f6a187202de718faeb220d2ff02c70ffd7280694d6efd9631f5b43510586d3ca81385599d43bd9014f1306597ce9204c8ce5d03bc1c1c667dc0f921ef160d818f1a7fa45a80c114beff07fda35acaadd79b27592e34fcb585927e554c257977e5cedf244e56bc18120264c74afb2addd1f784266b0ee6c5a2199ae7b80dfdb4c3200c47ec3462c8f7d731251bd1327f61aae3dc3b7c90544adcd7940635b12107196cfbf749b0ed6e28fbb3920bb3ec9fad190ad63d383891185a9adbdc91b259f026c2f84d872da33f38f6c1db13bbb35b14c49e8e232e1adbdda06d3a3ae16f82c56152213d4e6921571a5e8f09c31fa7e1923abe5e0e1f9c7dfb07c69ca3a37fbf77bf1721aff05f5463ceb7fe445f3ed77c07287811c17cc56050ac6ce491e160b3f68785cbc396c3aceda2e74dadb06413f0ba0fea3b0ea51f30b39803b2e4b8bf83012518934d04719dc5a93d0e26290de2904242a536952a397f0d932dc7e09af9bd86e9277de2da43064210c8c41cfbaca46cb82c884be504387c84dfb9f0b7c00bd1406ac33d75487b1893008196fe703ffa6e71c220af5a7f7c44229b237ffd720bf1ec0c4ce5760ee11fb7238ded92dc27b2cd221c498ee1b09a48d56588add9d4843805205ae52880b851aaba47217a068aa9f4018a943b4233466088bd2acfd66e5352a079f7f4cc82a0bc28d20b3439d73babb0caf85c58c31af293b271ae073c9efc20819964dd72523be9a2f21ae99c7b5dcd9e5a8a4c84a0304636f06c3bed855bfe4f5ad273e269f33b6c7c7352d730a7dc9180a04bcce2e628abde2b430aa715ee0ed43497cc4f46e17b490b4dcfae7abab3cd1d0e7e16b26457ce55542b21af625f0b41a8ff4e9d4aadd4b639214950c9d464a58939876f1c144a2581d559dc8fa152ee1d439a516314bed61f4020d6f0f41385e0fa1545f76acbce0893117f8d560d21ecfe9acc6857837de4e22357e6a18c8c3aaba1c49858ea44584a947a99975cca1225e8a9cbf268b34db5f33855c1628c2ebc838d7f39dfddd7a69f07d77f10eb8cf293e4607503793d45c14fceba26748382eadeda11335fd73a06401c3d2c7293247684e9eb58ed25c33ef0d3938eb9341f91a42fa097d5f14a247cc03032c6950382da65025a690a85d303e8f05a24ada40941c219ffdeff0c85bbf4224f67892a06d4f3e18c0b21d0dcafb4b622a4d854278be32a8660a95f0038a48d9fc42e105615a21489315f138b34f91bcee732dd9195d3ae6844a3fe31407d4bfcbb9e57434a3e4e9ba1f541b4e9d6725e95c59eb457e23870def7c041fb4ac716f6329b1a80f3fd59056c7c33480cdb0b3aad490d5057e2991dd61cb744aa98bef9cd81b135971732c4d910a79b69206a63015e02a8426f48b039048873af9fc27149c9da3924ecaf201c74d69bc3fb4152850157977b6d74471959012f53cf06cde8c7f91239c0ffdaea7bf0809b9c998731495478707a0502c4d3add711bcb671e1cde44725e449df679936cbbab0fcf917828df05c816612f8aa146f4ec89066c41c782c3f0c4321e5d6927f5e433ee22ab7c3142264523af019534641815930df478bdceeda9725a0876da6de608bb4f7ac2b62fef926bebddbc99047971a6331d15876c3bbf05b6a7686c23e4ff901f4ca56fe5d87f17241cb2c38265e97910356b40eee926fdc92a740eb9a53165f7b50ba0b916dde7a110a671bf9fb8601491050cd6a495ac2504189bd4ded9305523cc0e31a8351fe4012042110c7b9654f8e0f9c96eae3eed7aa08f1a84a4b5c5f70a31e851508f6e40e5ab7587826a1194e54b04e51a580f383b07ffb906db5d2bee80d8d9391d0bb023b07b42c7d518b9112bce1e458a15b1be734280beaa90e2be66b0db98a7a6989f778ac48b2c97cce0c3a936154c85ed9f08f26a43127342cfbabfd1812fe9d4ffab699844d6483532fe4320d3f771b1876dcbe49f024ac0e30e5387fd7e762541395f3d7bb7f3c9a3a73c9b2ce045246083aec61fc757b19287f67b4a6f7b3533a95c28c02f7bb9260bb53b00ed8f61c60ad301dd6e8846f460cc56c87f4aded00922572dde05a33c4a1570bc82b015e4e532c18a64017cd06eaceaeea01d86f868423fae4009a64b61d634eb2549d048cf652951153f805b29a7bc8aa54554482f1815aac5e211c21c4312a397dad9aaecba982f7bdc5a0623986ca073329ccc98750267bec92ee8383b716f3ec62bf15a48bf87862e6cc3bca78a72fb36c1793c1d21bb592fd2c33635c500a24b9453af706ee4a853e7f3996b0d9ede82ac3adcde3f91795236241958572e76aab4527735c2fe699e8df8b3d4e8ed77dedc6510121e75f4561871a8bf4ff217e3e87ec0dbf9c83f7a95daa53ac9ff95d6cb5edd8383861cfc21410b288d803ed59752f3cbaa242966e8fad22396fc015ce22f167aef2bd63861bb761874e890ba64da0567b9a2b8142c82ca66b86bb2a477af40c564a2906a0f4d616131e332d0d29bcbae020269e7c612f63545ab7cc54ffbe4803a1262fe122fb2bf491e610032517c44e0ea618e2363326963a8805a463ea94e14643d67e9c85597d87410680bcf4a6022b6d016052ddfcb5cb3a60f6ca4a617c50c714aa</script>
+  <div class="hbe hbe-content">
+    <div class="hbe hbe-input hbe-input-default">
+      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
+      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">Password</span>
+      </label>
     </div>
   </div>
-
-<h2 id="Smallbin-Consolidation-WIP"><a href="#Smallbin-Consolidation-WIP" class="headerlink" title="Smallbin Consolidation (WIP)"></a>Smallbin Consolidation (WIP)</h2><p>Now we want to work with smallbins.<br>Let’s say we have four chunks <code>A</code> <code>B</code> <code>C</code> <code>D</code> with size <code>0x90</code>.</p>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...   | </span><br><span class="line">size  |   0x91  |</span><br><span class="line">      /   ...   /</span><br><span class="line">B -&gt;  |   ...   |</span><br><span class="line">size  |   0x91  |</span><br><span class="line">      /   ...   /</span><br><span class="line">C -&gt;  |   ...   |</span><br><span class="line">size  |   0x91  |</span><br><span class="line">      /   ...   /</span><br><span class="line">D -&gt;  |   ...   | &lt;- prevents consolidation with top chunk</span><br><span class="line">size  |   0x91  |</span><br><span class="line">      /   ...   /</span><br><span class="line">top-&gt; /   ...   /</span><br></pre></td></tr></table></figure></div>
-<ol>
-<li>Fill tcache, so that we are working with smallbins</li>
-<li>Free <code>A</code>, (<code>A</code> could also be a fake chunk, as long as <code>free()</code> works!)</li>
-<li>Overflow to <code>C</code>: <code>PREV_INUSE = 0</code> and <code>prev_size -&gt; A</code></li>
-<li>On <code>glibc &gt;= 2.29</code>, overflow to <code>A</code>: <code>size -&gt; C</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...     | &lt;- freed in unsorted bin</span><br><span class="line">size  |   0x121   | &lt;- size = 0x90+0x90</span><br><span class="line">      /   ...     /</span><br><span class="line">B -&gt;  |   0x90    |</span><br><span class="line">size  |   0x90    |</span><br><span class="line">      /   ...     /</span><br><span class="line">C -&gt;  |   0x120   | &lt;- prev_size = 0x90+0x90</span><br><span class="line">size  |   0x90    |</span><br><span class="line">      /   ...     /</span><br><span class="line">D -&gt;  |   ...     | </span><br><span class="line">size  |   0x91    |</span><br><span class="line">      /   ...     /</span><br></pre></td></tr></table></figure></div>
-<ol start="5">
-<li>Now we free <code>C</code>, and cause consilidation</li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...     | -</span><br><span class="line">size  |   0x121   | |</span><br><span class="line">      /   ...     / |</span><br><span class="line">B -&gt;  |   ...     | |</span><br><span class="line">size  |   0x90    | | freed in unsorted bin</span><br><span class="line">      /   ...     / |</span><br><span class="line">C -&gt;  |   0x120   | |</span><br><span class="line">size  |   0x90    | |</span><br><span class="line">      /   ...     / -</span><br><span class="line">D -&gt;  |   0x1b0   |</span><br><span class="line">size  |   0x91    |</span><br><span class="line">      /   ...     /</span><br></pre></td></tr></table></figure></div>
-<ol start="6">
-<li>Alloc chunk <code>E</code> with size <code>0x1a8</code></li>
-</ol>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">A -&gt;  |   ...     | -</span><br><span class="line">size  |   0x121   | |</span><br><span class="line">      /   ...     / |</span><br><span class="line">B -&gt;  |   ...     | |</span><br><span class="line">size  |   0x90    | | now chunk E</span><br><span class="line">      /   ...     / |</span><br><span class="line">C -&gt;  |   0x120   | |</span><br><span class="line">size  |   0x90    | |</span><br><span class="line">      /   ...     / |</span><br><span class="line">D -&gt;  |   ...     | -</span><br><span class="line">size  |   0x91    |</span><br><span class="line">      /   ...     /</span><br></pre></td></tr></table></figure></div>
+</div>
+<link href="/css/hbe.style.css" rel="stylesheet" type="text/css"><script data-swup-reload-script type="module" src="/js/plugins/hbe.js"></script>
+<script data-swup-reload-script type="module">
+import {initHBE} from "/js/plugins/hbe.js";
+  console.log("hexo-blog-encrypt: loaded.");
+    initHBE();
+</script>
 
 		</div>
 
@@ -834,18 +708,18 @@ mjx-container[display="true"] + br {
 		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
 			<div class="article-copyright-info-container">
     <ul>
-        <li><strong>Title:</strong> Heap Exploitation Basics</li>
+        <li><strong>Title:</strong> Musikgeschichte I Notes</li>
         <li><strong>Author:</strong> cryfrogg</li>
         <li><strong>Created at
-                :</strong> 2025-12-15 23:44:41</li>
+                :</strong> 2026-07-10 05:04:44</li>
         
             <li>
                 <strong>Updated at
-                    :</strong> 2025-12-18 05:26:13
+                    :</strong> 2026-07-10 05:05:44
             </li>
         
         <li>
-            <strong>Link:</strong> https://cryfrogg.github.io/CS/CTF/PWN/Heap-Exploitation-Basics/
+            <strong>Link:</strong> https://cryfrogg.github.io/Music/Musicology/Musikgeschichte-I-Notes/
         </li>
         <li>
             <strong>
@@ -867,15 +741,7 @@ mjx-container[display="true"] + br {
 		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
 			
 			<li class="tag-item mx-0.5">
-				<a href="/tags/binary-exploitation/">#binary exploitation</a>&nbsp;
-			</li>
-			
-			<li class="tag-item mx-0.5">
-				<a href="/tags/intermediate/">#intermediate</a>&nbsp;
-			</li>
-			
-			<li class="tag-item mx-0.5">
-				<a href="/tags/heap/">#heap</a>&nbsp;
+				<a href="/tags/note/">#note</a>&nbsp;
 			</li>
 			
 		</ul>
@@ -886,23 +752,11 @@ mjx-container[display="true"] + br {
 		
 		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
 			
-			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
-				<a class="prev" rel="prev" href="/CS/CTF/PWN/SigReturn-Oriented-Programming/">
-					<span class="left arrow-icon flex justify-center items-center">
-						<i class="fa-solid fa-chevron-left"></i>
-					</span>
-					<span class="title flex justify-center items-center">
-						<span class="post-nav-title-item truncate max-w-48">SigReturn-Oriented Programming (SROP)</span>
-						<span class="post-nav-item">Prev posts</span>
-					</span>
-				</a>
-			</div>
-			
 			
 			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
-				<a class="next" rel="next" href="/CS/CTF/PWN/Binary-Exploitation-Basics-All-In-One/">
+				<a class="next" rel="next" href="/Music/Musicology/HistAP-Notes/">
 					<span class="title flex justify-center items-center">
-						<span class="post-nav-title-item truncate max-w-48">Binary Exploitation Basics All In One</span>
+						<span class="post-nav-title-item truncate max-w-48">HistAP Notes</span>
 						<span class="post-nav-item">Next posts</span>
 					</span>
 					<span class="right arrow-icon flex justify-center items-center">
@@ -923,8 +777,8 @@ mjx-container[display="true"] + br {
 		<div class="post-toc-wrap">
 	<div class="post-toc">
 		<div class="toc-title">On this page</div>
-		<div class="page-title">Heap Exploitation Basics</div>
-		<ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Chunks"><span class="nav-text">Chunks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FD-Corruption-fastbin-tcache"><span class="nav-text">FD Corruption (fastbin &#x2F; tcache)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Size-Corruption"><span class="nav-text">Size Corruption</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Smallbin-Consolidation-WIP"><span class="nav-text">Smallbin Consolidation (WIP)</span></a></li></ol>
+		<div class="page-title">Musikgeschichte I Notes</div>
+		
 
 	</div>
 </div>
