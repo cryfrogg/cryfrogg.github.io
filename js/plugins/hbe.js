@@ -1,6 +1,3 @@
-import { main } from "../main.js";
-import { initTOC } from "../layouts/toc.js";
-
 export function initHBE() {
   const cryptoObj = window.crypto || window.msCrypto;
   const storage = window.localStorage;
@@ -222,12 +219,15 @@ export function initHBE() {
           window.location.reload();
         });
 
-        document.getElementById("hexo-blog-encrypt").style.display = "inline";
-        document.getElementById("hexo-blog-encrypt").innerHTML = "";
-        document
-          .getElementById("hexo-blog-encrypt")
-          .appendChild(await convertHTMLToElement(decoded));
-        document.getElementById("hexo-blog-encrypt").appendChild(hideButton);
+        const content = await convertHTMLToElement(
+          decoded.slice(knownPrefix.length),
+        );
+        const fragment = document.createDocumentFragment();
+        while (content.firstChild) {
+          fragment.appendChild(content.firstChild);
+        }
+        fragment.appendChild(hideButton);
+        document.getElementById("hexo-blog-encrypt").replaceWith(fragment);
 
         // support html5 lazyload functionality.
         document.querySelectorAll("img").forEach((elem) => {
@@ -236,9 +236,7 @@ export function initHBE() {
           }
         });
 
-        // // load Redefine Page components
-        main.refresh();
-        initTOC();
+        window.dispatchEvent(new CustomEvent("redefine:page:refresh"));
 
         // trigger event
         var event = new Event("hexo-blog-decrypt");
