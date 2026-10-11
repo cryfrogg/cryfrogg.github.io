@@ -1,6 +1,15 @@
 (function () {
   'use strict';
 
+  // Shared palette for notes (@r:C) and annotations ("^@r:Text").
+  // Edit or add aliases here.
+  const NOTE_COLOR_ALIASES = {
+    r: '#DE7070',
+    g: '#32A466',
+    b: '#5085DC',
+    y: '#DFC95F',
+  };
+
   const svgNS = 'http://www.w3.org/2000/svg';
   const DEFAULT_ANNOTATION_LINE_HEIGHT = 1.25;
   let EngraverController;
@@ -83,8 +92,125 @@
     };
   }
 
+  function resolveColor(name) {
+    const color = NOTE_COLOR_ALIASES[name] || name;
+    return name && CSS.supports('color', color) ? color : null;
+  }
+
+  function prepareColors(source) {
+    const colors = new Map();
+    let annotationColors = false;
+    let offset = 0;
+    const abc = source.replace(/\r\n?/g, '\n').split('\n').map(line => {
+      let result = '';
+      let start = 0;
+      let inChord = false;
+      if (!/^\s*(?:[A-Za-z]:|%|\\)/.test(line)) {
+        // Protect comments, native decorations, inline fields, and grace notes.
+        const tokens = /"[^"\n]*"|%.*|\[[A-Za-z]:[^\]]*\]|\{[^}]*\}|![^!\n]*!|\+[^+\n]*\+|@([^\s:"]+):([ \t]*)([_^=]*(?:\d*\/\d*)?[A-Ga-g][,']*)|\[(?=[ \t]*[@!_^=A-Ga-g])|\]|[ \t]+/g;
+        for (const match of line.matchAll(tokens)) {
+          result += line.slice(start, match.index);
+          let text = match[0];
+          const color = resolveColor(match[1]);
+          if (color) {
+            text = (inChord ? '' : match[2]) + match[3];
+            colors.set(offset + result.length + text.length - match[3].length, color);
+          } else if (text.startsWith('"')) {
+            // Keep the marker in the parsed annotation until afterParsing.
+            // Repeat it on each row before ABCJS merges stacked annotations.
+            const annotation = text.match(/^"(?:[_^<>]|@[-+\d.]+,[-+\d.]+[ \t]*)(@([^\s:"]+):)/);
+            if (annotation && resolveColor(annotation[2])) {
+              annotationColors = true;
+              text = text.replace(/\\n|;/g, separator => separator + annotation[1]);
+            }
+          } else if (text === '[') inChord = true;
+          else if (text === ']') inChord = false;
+          else if (inChord && /^[ \t]+$/.test(text)) text = '';
+          result += text;
+          start = match.index + match[0].length;
+        }
+      }
+      result += line.slice(start);
+      offset += result.length + 1;
+      return result;
+    }).join('\n');
+    const hasColors = colors.size > 0 || annotationColors;
+    return { abc: hasColors ? abc : source, colors, hasColors };
+  }
+
+  function markColors(tune, abc, colors) {
+    tune.lines.forEach(line => (line.staff || []).forEach(staff => staff.voices.forEach(voice => {
+      voice.forEach(note => {
+        (note.chord || []).forEach(chord => {
+          if (chord.position === 'default') return;
+          chord.colorRows = chord.name.split('\n').map(text => {
+            const marker = text.match(/^@([^\s:]+):/);
+            const color = marker && resolveColor(marker[1]);
+            return { text: color ? text.slice(marker[0].length) : text, color };
+          });
+          // Strip before measuring so prefixes take no space in the score.
+          chord.name = chord.colorRows.map(row => row.text).join('\n');
+        });
+        if (!note.pitches) return;
+        const source = abc.slice(note.startChar, note.endChar);
+        const tokens = /"[^"]*"|%[^\n]*|\{[^}]*\}|\[[A-Za-z]:[^\]]*\]|![^!]*!|\+[^+]*\+|([_^=]*(?:\d*\/\d*)?[A-Ga-g][,']*)/g;
+        let index = 0;
+        for (const match of source.matchAll(tokens)) {
+          if (!match[1]) continue;
+          const pitch = note.pitches[index++];
+          const color = colors.get(note.startChar + match.index);
+          if (pitch && color) pitch.noteColor = color;
+        }
+      });
+    })));
+  }
+
+  function drawColors(tune) {
+    tune.engraver.staffgroups.forEach(group => group.voices.forEach(voice => voice.children.forEach(element => {
+      const rows = (element.abcelem.chord || []).flatMap(chord =>
+        (chord.colorRows || []).slice().reverse().map(row => ({ ...row,
+          position: chord.rel_position ? 'relative' : chord.position })));
+      element.children.forEach(child => {
+        if (child.type !== 'text') return;
+        const index = rows.findIndex(row => row.text === child.c && row.position === child.position);
+        if (index < 0) return;
+        const { color } = rows.splice(index, 1)[0];
+        if (color && child.graphelem) {
+          child.graphelem.style.fill = color;
+          // MathJax paths use currentColor rather than inherited fill.
+          child.graphelem.style.color = color;
+        }
+      });
+      (element.abcelem.pitches || []).forEach((pitch, index) => {
+        if (!pitch.noteColor) return;
+        const head = element.heads[index];
+        if (!head) return;
+        const accidental = element.children.find(child => child.c && child.c.startsWith('accidentals.') &&
+          child.pitch === head.pitch && child.chordPos === head.chordPos);
+        [head, accidental].forEach(child => {
+          if (child && child.graphelem) child.graphelem.style.fill = pitch.noteColor;
+        });
+      });
+    })));
+  }
+
   function renderAbc(output, abc, options = {}, formulas = {}) {
+    const prepared = prepareColors(abc);
+    abc = prepared.abc;
+    if (prepared.hasColors) {
+      const afterParsing = options.afterParsing;
+      options = { ...options, afterParsing(tune, ...args) {
+        markColors(tune, abc, prepared.colors);
+        if (afterParsing) afterParsing(tune, ...args);
+      } };
+    }
     const math = create(formulas, options.annotationLineHeight);
+    const visuals = render(output, abc, options, math);
+    if (prepared.hasColors) visuals.forEach(drawColors);
+    return visuals;
+  }
+
+  function render(output, abc, options, math) {
     if (!math) return ABCJS.renderAbc(output, abc, options);
     const Controller = getEngraverController();
     // Use the library's parsing engine and native engraving on isolated
